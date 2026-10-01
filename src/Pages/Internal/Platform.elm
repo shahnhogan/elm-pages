@@ -624,7 +624,7 @@ update config appMsg model =
                                 newActionData |> Maybe.andThen config.onActionData
                         in
                         ( { updatedModel
-                            | ariaNavigationAnnouncement = mainView config updatedModel |> .title
+                            | ariaNavigationAnnouncement = mainView config { updatedModel | currentPath = newUrl.path } |> .title
                             , currentPath = newUrl.path
                           }
                         , if not stayingOnSamePath && scrollToTopWhenDone then
@@ -923,7 +923,7 @@ update config appMsg model =
                                                 NoEffect
                                     in
                                     ( { updatedModel
-                                        | ariaNavigationAnnouncement = mainView config updatedModel |> .title
+                                        | ariaNavigationAnnouncement = mainView config { updatedModel | currentPath = newUrl.path } |> .title
                                         , currentPath = newUrl.path
                                       }
                                     , if not isSubmission && not stayingOnSamePath then
@@ -1022,7 +1022,7 @@ update config appMsg model =
                                                 NoEffect
                                     in
                                     ( { updatedModel_
-                                        | ariaNavigationAnnouncement = mainView config updatedModel_ |> .title
+                                        | ariaNavigationAnnouncement = mainView config { updatedModel_ | currentPath = pendingUrl.path } |> .title
                                         , currentPath = pendingUrl.path
                                       }
                                     , if not isSubmission_ && not stayingOnSamePath_ then
@@ -1907,7 +1907,7 @@ loadDataAndUpdateUrl ( newPageData, newSharedData, newActionData ) maybeUserMsg 
                     newActionData |> Maybe.andThen config.onActionData
             in
             ( { updatedModel
-                | ariaNavigationAnnouncement = mainView config updatedModel |> .title
+                | ariaNavigationAnnouncement = mainView config { updatedModel | currentPath = newUrl.path } |> .title
                 , currentPath = newUrl.path
               }
             , ScrollToTop

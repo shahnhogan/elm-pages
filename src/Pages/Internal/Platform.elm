@@ -1429,7 +1429,11 @@ startFetcher2 config fromPageReload fetcherKey transitionId formData model =
             , headers = []
 
             -- TODO use formData.method to do either query params or POST body
-            , url = formData.action |> Url.fromString |> Maybe.map (\{ path } -> UrlPath.join [ path, "content.dat" ] |> UrlPath.toAbsolute) |> Maybe.withDefault "/"
+            , url =
+                formData.action
+                    |> Url.fromString
+                    |> Maybe.map (\actionUrl -> (UrlPath.join [ actionUrl.path, "content.dat" ] |> UrlPath.toAbsolute) ++ queryString actionUrl)
+                    |> Maybe.withDefault "/"
             , method = formData.method |> methodToString
             , timeout = Nothing
             }
@@ -1592,6 +1596,15 @@ withUserMsg config userMsg ( model, effect ) =
             ( model, effect )
 
 
+{-| `"?a=b"` for a URL with a query, `""` otherwise.
+-}
+queryString : Url -> String
+queryString { query } =
+    query
+        |> Maybe.map (\encoded -> "?" ++ encoded)
+        |> Maybe.withDefault ""
+
+
 urlPathToPath : Url -> UrlPath
 urlPathToPath urls =
     urls.path |> UrlPath.fromString
@@ -1623,6 +1636,16 @@ fetchRouteData transitionKey toMsg config url details =
             details
                 |> Maybe.map .method
                 |> Maybe.withDefault Form.Get
+
+        -- A POST goes to the form's action URL, query string included, the way a browser
+        -- submits a form natively. Pages that read query params in `data` depend on it.
+        postQuery : String
+        postQuery =
+            details
+                |> Maybe.map .action
+                |> Maybe.andThen Url.fromString
+                |> Maybe.withDefault url
+                |> queryString
     in
     Http.request
         { method = details |> Maybe.map (.method >> methodToString) |> Maybe.withDefault "GET"
@@ -1656,7 +1679,7 @@ fetchRouteData transitionKey toMsg config url details =
                         -- TODO extract this to something unit testable
                         -- TODO make states mutually exclusive for submissions and direct URL requests (shouldn't be possible to append two query param strings)
                         Form.Post ->
-                            ""
+                            postQuery
 
                         Form.Get ->
                             url.query

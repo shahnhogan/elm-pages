@@ -50,7 +50,7 @@ type alias ProgramConfig userMsg userModel route pageData actionData sharedData 
         -> ( userModel, effect )
     , update : Form.Model -> Dict String (Pages.ConcurrentSubmission.ConcurrentSubmission actionData) -> Maybe Pages.Navigation.Navigation -> sharedData -> pageData -> Maybe Browser.Navigation.Key -> userMsg -> userModel -> ( userModel, effect )
     , subscriptions : route -> UrlPath -> userModel -> Sub userMsg
-    , sharedData : BackendTask FatalError sharedData
+    , sharedData : Server.Request.Request -> BackendTask FatalError sharedData
     , data : Server.Request.Request -> route -> BackendTask FatalError (PageServerResponse pageData errorPage)
     , action : Server.Request.Request -> route -> BackendTask FatalError (PageServerResponse actionData errorPage)
     , onActionData : actionData -> Maybe userMsg

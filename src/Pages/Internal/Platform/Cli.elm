@@ -720,7 +720,12 @@ initLegacy site ((RenderRequest.SinglePage includeHtml singleRequest _) as rende
                                                                     )
                                                                     serverRequestPayload.frontmatter
                                                                 )
-                                                                config.sharedData
+                                                                (config.sharedData
+                                                                    (RenderRequest.maybeRequestPayload renderRequest
+                                                                        |> Maybe.map Internal.Request.toRequest
+                                                                        |> Maybe.withDefault Internal.Request.fakeRequest
+                                                                    )
+                                                                )
                                                                 globalHeadTags
                                                 )
                                             |> BackendTask.onError
@@ -743,6 +748,10 @@ initLegacy site ((RenderRequest.SinglePage includeHtml singleRequest _) as rende
                                                     else
                                                         --only render the production ErrorPage in production server-rendered Routes
                                                         config.sharedData
+                                                            (RenderRequest.maybeRequestPayload renderRequest
+                                                                |> Maybe.map Internal.Request.toRequest
+                                                                |> Maybe.withDefault Internal.Request.fakeRequest
+                                                            )
                                                             |> BackendTask.andThen
                                                                 (\justSharedData ->
                                                                     let

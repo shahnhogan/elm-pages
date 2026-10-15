@@ -5823,7 +5823,8 @@ when any initial BackendTask needs simulation.
 resolveInitialData config requestDefaults initialUrl initialPath initialCookieJar virtualFs =
     let
         ( vfs1, sharedBt ) =
-            BackendTaskTest.resolveWithVirtualFsPartial virtualFs config.sharedData
+            BackendTaskTest.resolveWithVirtualFsPartial virtualFs
+                (config.sharedData (platformTestRequest requestDefaults (Url.toString initialUrl) initialCookieJar))
     in
     case sharedBt of
         BackendTaskTest.Done sharedDoneState ->

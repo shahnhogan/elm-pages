@@ -553,7 +553,7 @@ initLegacy site ((RenderRequest.SinglePage includeHtml singleRequest _) as rende
                                                                                                     case actionRequestKind of
                                                                                                         ActionResponseRequest ->
                                                                                                             ( ignored2.headers
-                                                                                                            , ResponseSketch.HotUpdate pageData_ sharedData (Just actionData_)
+                                                                                                            , pageResponseSketch { isDevServer = isDevServer } includeHtml pageData_ sharedData (Just actionData_)
                                                                                                                 |> config.encodeResponse
                                                                                                                 |> Bytes.Encode.encode
                                                                                                             )
@@ -573,7 +573,7 @@ initLegacy site ((RenderRequest.SinglePage includeHtml singleRequest _) as rende
 
                                                                                         Nothing ->
                                                                                             ( responseMetadata.headers
-                                                                                            , ResponseSketch.HotUpdate pageData_ sharedData Nothing
+                                                                                            , pageResponseSketch { isDevServer = isDevServer } includeHtml pageData_ sharedData Nothing
                                                                                                 |> config.encodeResponse
                                                                                                 |> Bytes.Encode.encode
                                                                                             )
@@ -685,7 +685,7 @@ initLegacy site ((RenderRequest.SinglePage includeHtml singleRequest _) as rende
                                                                                         viewValue =
                                                                                             (config.view Dict.empty Dict.empty Nothing currentPage Nothing sharedData pageData2 Nothing |> .view) pageModel
                                                                                     in
-                                                                                    (ResponseSketch.HotUpdate pageData2 sharedData Nothing
+                                                                                    (pageResponseSketch { isDevServer = isDevServer } includeHtml pageData2 sharedData Nothing
                                                                                         |> config.encodeResponse
                                                                                         |> Bytes.Encode.encode
                                                                                     )
@@ -770,7 +770,8 @@ initLegacy site ((RenderRequest.SinglePage includeHtml singleRequest _) as rende
 
                                                                         byteEncodedPageData : Bytes
                                                                         byteEncodedPageData =
-                                                                            ResponseSketch.HotUpdate
+                                                                            pageResponseSketch { isDevServer = isDevServer }
+                                                                                includeHtml
                                                                                 dataThing
                                                                                 justSharedData
                                                                                 -- TODO remove shared action data
@@ -967,6 +968,29 @@ nextStepToEffect model nextStep =
             ( model
             , finalValue
             )
+
+
+{-| The page data a server-rendered response carries. A `content.dat` request
+(a client-side navigation, a link prefetch, or a form submission) comes from a
+page that already holds its shared data, so the production server leaves the
+shared data out and the client keeps the copy it has; a first load carries it.
+The dev server sends it on every response, because its hot reload re-fetches
+`content.dat` for the current page to pick up data changes.
+-}
+pageResponseSketch :
+    { isDevServer : Bool }
+    -> RenderRequest.IncludeHtml
+    -> pageData
+    -> sharedData
+    -> Maybe actionData
+    -> ResponseSketch.ResponseSketch pageData actionData sharedData
+pageResponseSketch { isDevServer } includeHtml pageData sharedData actionData =
+    case ( isDevServer, includeHtml ) of
+        ( False, RenderRequest.OnlyJson ) ->
+            ResponseSketch.RenderPage pageData actionData
+
+        _ ->
+            ResponseSketch.HotUpdate pageData sharedData actionData
 
 
 render404Page :

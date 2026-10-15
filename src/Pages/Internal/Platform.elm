@@ -873,6 +873,12 @@ update config appMsg model =
                                                     previousPageData.userModel
                                                     |> Tuple.mapSecond UserCmd
 
+                                        completedTransitionKey : Int
+                                        completedTransitionKey =
+                                            clearedModel.transition
+                                                |> Maybe.map Tuple.first
+                                                |> Maybe.withDefault clearedModel.nextTransitionKey
+
                                         updatedModel : Model userModel pageData actionData sharedData
                                         updatedModel =
                                             { clearedModel
@@ -887,6 +893,7 @@ update config appMsg model =
                                                     else
                                                         clearedModel.pageFormState
                                             }
+                                                |> clearLoadingFetchersAfterDataLoad completedTransitionKey
 
                                         onActionMsg : Maybe userMsg
                                         onActionMsg =

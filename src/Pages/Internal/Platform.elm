@@ -98,7 +98,17 @@ mainView config model =
                         pageData.userModel
 
                 Err error ->
-                    { title = "Page Data Error"
+                    { title =
+                        if String.isEmpty error then
+                            -- The page data has not arrived through the port yet. The
+                            -- document already carries the server-rendered title, and
+                            -- Browser.application only writes a title that differs from
+                            -- the one it started with, so repeating it keeps the first
+                            -- draw from retitling the tab.
+                            model.initialTitle
+
+                        else
+                            "Page Data Error"
                     , body =
                         [ Html.div [] [ Html.text error ] ]
                     }
@@ -177,6 +187,10 @@ init _ flags url key =
       , pageData = Err ""
       , ariaNavigationAnnouncement = ""
       , userFlags = flags
+      , initialTitle =
+            flags
+                |> Decode.decodeValue (Decode.field "initialTitle" Decode.string)
+                |> Result.withDefault ""
       , notFound = Nothing
       , transition = Nothing
       , nextTransitionKey = 0
@@ -233,6 +247,7 @@ type alias Model userModel pageData actionData sharedData =
             }
     , notFound : Maybe { reason : NotFoundReason, path : UrlPath }
     , userFlags : Decode.Value
+    , initialTitle : String
     , transition : Maybe ( Int, Pages.Navigation.Navigation )
     , nextTransitionKey : Int
     , inFlightFetchers : Dict String ( Int, Pages.ConcurrentSubmission.ConcurrentSubmission actionData )

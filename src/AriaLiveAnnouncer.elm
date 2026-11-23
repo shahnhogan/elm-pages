@@ -7,6 +7,9 @@ import Html.Lazy
 
 {-| This ensures that page changes are announced with screen readers.
 
+The announcement is the page title alone, as a full page load announces it, so it is
+in the page's own language.
+
 Inspired by <https://www.gatsbyjs.com/blog/2020-02-10-accessible-client-side-routing-improvements/>.
 
 -}
@@ -34,4 +37,4 @@ mainView title =
         , Attr.style "whiteSpace" "nowrap"
         , Attr.style "border" "0"
         ]
-        [ Html.text <| "Navigated to " ++ title ]
+        [ Html.text title ]

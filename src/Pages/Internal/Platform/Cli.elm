@@ -374,6 +374,11 @@ isActionDecoder =
                     "GET" ->
                         Nothing
 
+                    -- A HEAD request asks for the GET response without its body.
+                    -- `Server.Request.method` still reads `Head`.
+                    "HEAD" ->
+                        Nothing
+
                     "OPTIONS" ->
                         Nothing
 
